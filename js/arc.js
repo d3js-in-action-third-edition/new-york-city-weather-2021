@@ -50,7 +50,7 @@ const drawArc = (data) => {
           endAngle: angleDaysWithPrecipitations_rad
         });
       })
-      .attr("fill", "#6495ED");
+      .attr("fill", "#6EB7C2");
 
   // Append arc for other days
   innerChart
@@ -61,8 +61,7 @@ const drawArc = (data) => {
           endAngle: 2 * Math.PI
         });
       })
-      .attr("fill", "#2f4f4f")
-      .attr("fill-opacity", 0.2);
+      .attr("fill", "#DCE2E2");
 
 
   /***********************/
