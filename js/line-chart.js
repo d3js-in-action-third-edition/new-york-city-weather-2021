@@ -1,6 +1,6 @@
-// Load the data
-d3.csv("./data/weekly_temperature.csv", d3.autoType).then(data => {
-  console.log("data temperature", data);
+// Load the data here
+d3.csv("../data/weekly_temperature.csv", d3.autoType).then(data => {
+  console.log("temperature data", data);
   drawLineChart(data);
 });
 
@@ -15,8 +15,8 @@ const drawLineChart = (data) => {
   const height = 500;
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
-
   const aubergine = "#75485E";
+
 
   /*******************************/
   /*    Append the containers    */
@@ -26,7 +26,7 @@ const drawLineChart = (data) => {
     .append("svg")
       .attr("viewBox", `0, 0, ${width}, ${height}`);
 
-  // Append the group that will contain the chart
+  // Append the group that will contain the inner chart
   const innerChart = svg
     .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
@@ -43,9 +43,7 @@ const drawLineChart = (data) => {
     .range([0, innerWidth]);
 
   // Y scale
-  const minTemp = d3.min(data, d => d.min_temp_F);
   const maxTemp = d3.max(data, d => d.max_temp_F);
-  console.log(minTemp, maxTemp);
   const yScale = d3.scaleLinear()
     .domain([0, maxTemp])
     .range([innerHeight, 0]);
@@ -56,14 +54,18 @@ const drawLineChart = (data) => {
   /***************************/
   // Bottom axis
   const bottomAxis = d3.axisBottom(xScale)
-    // .tickValues([2021-01-01, 2021-01-02, 2021-01-03, 2021-01-04, 2021-01-05])
-    .tickFormat(d3.timeFormat("%b %d"));
+    .tickFormat(d3.timeFormat("%b"));
   innerChart
     .append("g")
       .attr("class", "axis-x")
       .attr("transform", `translate(0, ${innerHeight})`)
       .call(bottomAxis);
   d3.selectAll(".axis-x text")
+    .attr("x", d => {
+       const currentMonth = d;
+       const nextMonth = new Date(2021, currentMonth.getMonth() + 1, 1);
+       return (xScale(nextMonth) - xScale(currentMonth)) / 2;
+    })
     .attr("y", "10px");
 
   // Left axis
@@ -74,6 +76,18 @@ const drawLineChart = (data) => {
       .call(leftAxis);
   d3.selectAll(".axis-y text")
     .attr("dx", "-5px");
+
+  // Set the font-family and font-size property of axis labels
+  // This could also be handled from a CSS file
+  d3.selectAll(".axis-x text, .axis-y text")
+    .style("font-family", "Roboto, sans-serif")
+    .style("font-size", "14px");
+
+  // Add label to the y-axis
+  svg
+    .append("text")
+      .text("Temperature (°F)")
+      .attr("y", 20);
 
   
   /************************************************/
@@ -120,32 +134,23 @@ const drawLineChart = (data) => {
       .attr("fill", "none")
       .attr("stroke", aubergine);
 
-  
+      
   /************************/
   /*      Add labels      */
   /************************/
 
-  // Label for y-axis (Temperature (F))
-  svg
-    .append("text")
-      .attr("class", "chart-label")
-      .text("Temperature (°F)")
-      .attr("y", 20);
-
   // Label for line chart
   innerChart
     .append("text")
-      .attr("class", "chart-label")
       .text("Average temperature")
       .attr("x", xScale(lastDate) + 10)
       .attr("y", yScale(data[data.length - 1].avg_temp_F))
-      .attr("fill", aubergine)
-      .attr("alignment-baseline", "middle");
+      .attr("dominant-baseline", "middle")
+      .attr("fill", aubergine);
 
   // Annotation for max temperature
   innerChart
     .append("text")
-      .attr("class", "chart-label")
       .text("Maximum temperature")
       .attr("x", xScale(data[data.length - 4].date) + 13)
       .attr("y", yScale(data[data.length - 4].max_temp_F) - 20)
@@ -162,12 +167,11 @@ const drawLineChart = (data) => {
   // Annotation for min temperature
   innerChart
     .append("text")
-      .attr("class", "chart-label")
       .text("Minimum temperature")
       .attr("x", xScale(data[data.length - 3].date) + 13)
       .attr("y", yScale(data[data.length - 3].min_temp_F) + 20)
-      .attr("fill", aubergine)
-      .attr("alignment-baseline", "hanging");
+      .attr("dominant-baseline", "hanging")
+      .attr("fill", aubergine);
   innerChart
     .append("line")
       .attr("x1", xScale(data[data.length - 3].date))
